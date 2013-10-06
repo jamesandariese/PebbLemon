@@ -43,6 +43,9 @@ public class PebblemonSetup extends Activity {
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private static final String TAG = "PEBBLEMON";
     private static final String SENDER_ID = "153016106242";
+    private static final String PEBBLEMON_BASE_URL = "https://pebblemon.appspot.com";
+    private static final String PEBBLEMON_REGISTER_PATH = "/register";
+    private static final String PEBBLEMON_UNREGISTER_PATH = "/unregister";
 
     GoogleCloudMessaging gcm;
     AtomicInteger msgId;
@@ -335,7 +338,7 @@ public class PebblemonSetup extends Activity {
             Log.e(TAG, "Couldn't encode registration ID or auth token as JSON");
         }
         try {
-            httpPostJSON("https://pebblemon.appspot.com/register", registration);
+            httpPostJSON(PEBBLEMON_BASE_URL + PEBBLEMON_REGISTER_PATH, registration);
         } catch (IOException e) {
             Log.e(TAG, "Could not contact pebblemon servers!");
             return;
@@ -360,7 +363,7 @@ public class PebblemonSetup extends Activity {
             Log.e(TAG, "Couldn't encode registration ID as JSON");
         }
         try {
-            httpPostJSON("https://pebblemon.appspot.com/unregister", registration);
+            httpPostJSON(PEBBLEMON_BASE_URL + PEBBLEMON_UNREGISTER_PATH, registration);
         } catch (IOException e) {
             return;
         }
