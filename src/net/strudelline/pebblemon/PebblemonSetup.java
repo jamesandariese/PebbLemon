@@ -47,12 +47,8 @@ public class PebblemonSetup extends Activity {
     private static final String PEBBLEMON_REGISTER_PATH = "/register";
     private static final String PEBBLEMON_UNREGISTER_PATH = "/unregister";
 
-    GoogleCloudMessaging gcm;
-    AtomicInteger msgId;
-    Context context;
+    private GoogleCloudMessaging gcm;
 
-    String regId;
-    boolean gcmRegistrationStatus = false;
     boolean restRegistrationStatus = false;
 
     /**
@@ -63,17 +59,16 @@ public class PebblemonSetup extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        context = getApplicationContext();
+        Context context = getApplicationContext();
 
         // Check device for Play Services APK.
         if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(this);
-            regId = getRegistrationId(context);
+            String regId = getRegistrationId(context);
 
-            if (regId.isEmpty()) {
+            if (regId == null || regId.isEmpty()) {
                 registerInBackground();
             } else {
-                gcmRegistrationStatus = true;
                 sendRegistrationIdToBackendInBackground();
             }
         } else {
@@ -125,7 +120,8 @@ public class PebblemonSetup extends Activity {
             public void run() {
                 getTextViewById(R.id.restUuid).setText(getRestUUID(PebblemonSetup.this));
                 TextView registrationStatus = getTextViewById(R.id.registrationStatus);
-                if (gcmRegistrationStatus) {
+                String regId = getRegistrationId(getApplicationContext());
+                if (regId != null && (!regId.isEmpty())) {
                     if (restRegistrationStatus) {
                         registrationStatus.setText("Status: Registered");
                     } else {
@@ -167,7 +163,7 @@ public class PebblemonSetup extends Activity {
     private String getRestUUID(Context context) {
         final SharedPreferences prefs = getGCMPreferences(context);
         String uuid = prefs.getString(PROPERTY_REST_UUID, "");
-        if (uuid.isEmpty()) {
+        if (uuid == null || uuid.isEmpty()) {
             uuid = UUID.randomUUID().toString();
             saveRestUUID(context, uuid);
         }
@@ -184,7 +180,7 @@ public class PebblemonSetup extends Activity {
     private String getRegistrationId(Context context) {
         final SharedPreferences prefs = getGCMPreferences(context);
         String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-        if (registrationId.isEmpty()) {
+        if (registrationId == null || registrationId.isEmpty()) {
             Log.i(TAG, "Registration not found.");
             return "";
         }
@@ -238,14 +234,13 @@ public class PebblemonSetup extends Activity {
             protected String doInBackground(Void... params) {
                 String msg = "";
                 try {
+                    Context context = getApplicationContext();
                     if (gcm == null) {
                         gcm = GoogleCloudMessaging.getInstance(context);
                     }
-                    regId = gcm.register(SENDER_ID);
+                    String regId = gcm.register(SENDER_ID);
                     msg = "Device registered, registration ID=" + regId;
-
                     storeRegistrationId(context, regId);
-                    gcmRegistrationStatus = true;
 
                     updateDisplay();
 
@@ -321,13 +316,14 @@ public class PebblemonSetup extends Activity {
      * using the 'from' address in the message.
      */
     private void sendRegistrationIdToBackend() {
-        if (!gcmRegistrationStatus) {
-            Log.e(TAG, "Tried to send registration ID to backend server without registering!");
+        String regId = getRegistrationId(getApplicationContext());
+        if (regId == null || regId.isEmpty()) {
+            Log.i(TAG, "attempted to send registration ID to backend when it is empty.  Aborted");
             return;
         }
         restRegistrationStatus = false;
         updateDisplay();
-        Log.i(TAG, String.format("Sending Registration ID <%s> and RestAuthToken <%s> to backend", this.regId, this.getRestUUID(this)));
+        Log.i(TAG, String.format("Sending Registration ID <%s> and RestAuthToken <%s> to backend", regId, this.getRestUUID(this)));
 
         JSONObject registration = new JSONObject();
         try {
@@ -348,12 +344,13 @@ public class PebblemonSetup extends Activity {
     }
 
     private void unregisterWithBackend()  {
-        if (!gcmRegistrationStatus) {
+        String regId = getRegistrationId(getApplicationContext());
+        if (regId == null || regId.isEmpty()) {
             // can't be registered if we're not registered with GCM.  no-op.
             return;
         }
         restRegistrationStatus = false;
-        Log.i(TAG, String.format("Sending Registration ID <%s> and RestAuthToken <%s> to backend", this.regId, this.getRestUUID(this)));
+        Log.i(TAG, String.format("Sending Registration ID <%s> and RestAuthToken <%s> to backend", regId, this.getRestUUID(this)));
 
         JSONObject registration = new JSONObject();
         try {
