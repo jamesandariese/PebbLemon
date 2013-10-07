@@ -63,32 +63,7 @@ public class PebblemonReceiver extends BroadcastReceiver {
         i.putExtra("notificationData", notificationData);
 
         Log.d("pebblepush", "About to send a modal alert to Pebble: " + notificationData);
-        if (PebblemonPauser.isPaused()) {
-            Log.i("pebblepush", "PebblePush is paused.  Storing intent instead.");
-            addIntentToQueue(i);
-        } else {
-            for (Intent backedUpIntent : getQueuedIntents()) {
-                Log.i("pebblepush", "PebblePush is unpaused.  Sending stored intent");
-                context.sendBroadcast(i);
-            }
-            clearQueuedIntents();
-            context.sendBroadcast(i);
-        }
-    }
-
-
-    // Stubs for adding support to queue messages while the pebble is not near the phone.
-    private void addIntentToQueue(Intent i) {
-        // stub for now.
-    }
-
-    private void clearQueuedIntents() {
-        // stub for now.
-    }
-
-    private Intent[] getQueuedIntents() {
-        // stub for now.
-        return new Intent[0];
+        context.sendBroadcast(i);
     }
 
 }

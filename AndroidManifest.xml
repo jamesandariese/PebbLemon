@@ -29,6 +29,5 @@
             </intent-filter>
 
         </receiver>
-        <receiver android:name=".PebblemonPauser"/>
     </application>
 </manifest> 
