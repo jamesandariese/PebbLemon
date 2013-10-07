@@ -48,8 +48,6 @@ public class PebblemonReceiver extends BroadcastReceiver {
     }
 
     private void sendAlertToPebble(Context context, String title, String message) {
-        // this must be called every <time interval> in order toe nsure
-        // that the paused state is checked.
         final Intent i = new Intent("com.getpebble.action.SEND_NOTIFICATION");
 
         final Map data = new HashMap();
